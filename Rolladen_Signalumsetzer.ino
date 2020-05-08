@@ -4,7 +4,7 @@ void setup() {
 
   //Input Pins:
   pinMode(1, INPUT);
-
+  //Mein Kommentar für eine Änderung
 
   //Output Pins:
   pinMode(9, OUTPUT);
