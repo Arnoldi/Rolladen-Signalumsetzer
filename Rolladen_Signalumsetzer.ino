@@ -24,26 +24,16 @@ void loop() {
 
   //Check input here
   //  Read Pin_1
-  //  If Pin_1 == High        * check if Pin 1 is set
-  //    If flag_Pin_1 == High  * check if Pin 1 was set before
-  //      Count++
-  //    Else
-  //      flag_Pin_1 = High
-  //      Count = 0
-  //      Pin_9 = High
-  //    EndIf
+  //  If flag_Pin_1 == Pin_1  * check if Pin 1 was set before (flag_Pin_1 contains the previous value of Pin_1)
+  //    Count++               * nothing happened, count time up
   //  Else
-  //    If flag_Pin_1 == High
-  //      flag_Pin_1 = Low
-  //      Count = 0
-  //      Pin_9 = High
-  //    Else
-  //      Count++
-  //    EndIf
+  //    flag_Pin_1 = Pin_1    * set flag_Pin_1 to current value of Pin_1
+  //    Count = 0             * reset timer
+  //    Pin_9 = High          * set output to High
   //  EndIf
   //
   //  If Count >= 500 msec
-  //    Set Pin_9 Low
+  //    Pin_9 = Low
   //  EndIf
   //
   //  delay 100 ms
