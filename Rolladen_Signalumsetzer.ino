@@ -1,6 +1,7 @@
 #define PULSE_DURATION 500
+#define NUM_PINPAIRS 8
 
-
+typedef unsigned long Time_t;
 typedef int Clock_t;
 typedef unsigned int Timer_t;
 typedef unsigned char Pin_t;
@@ -19,47 +20,27 @@ enum FlipFlopState_t {
 };
 
 struct PinTimedFlipFlop_t {
+  PinTimedFlipFlop_t():
+    PinTimedFlipFlop_t(0, 0)
+  {}
+  PinTimedFlipFlop_t(Pin_t InputPin, Pin_t OutputPin):
+    InputPin(InputPin),
+    OutputPin(OutputPin),
+    Timer(0),
+    InputPinPreviousState(LOW)
+  {}
   Timer_t Timer;
   PinState_t InputPinPreviousState;
   Pin_t InputPin;
   Pin_t OutputPin;
 };
 
-void setup() {
-  // put your setup code here, to run once:
-
-  //Input Pins:
-  //Use Pullup resistor. To get an input signal, actively pull the line to ground.
-  pinMode(1, INPUT_PULLUP);
-
-  //Output Pins:
-  pinMode(9, OUTPUT);
-  //Set the initial output to low.
-  digitalWrite(9, LOW);
-}
-
 FlipFlopState_t getNewFlipFlopState(PinState_t OldState, PinState_t NewState) {
-  if (OldState == HIGH) {
-    if (NewState == HIGH) {
-      return INPUT_HIGH;
-    } else {
-      return INPUT_FALLING;
-    }
-  } else {
-    if (NewState == HIGH) {
-      return INPUT_RISING;
-    } else {
-      return INPUT_LOW; 
-    }
-  }
-}
-
-FlipFlopState_t getNewFlipFlopState2(PinState_t OldState, PinState_t NewState) {
   return (FlipFlopState_t)(((OldState == HIGH) ? OLD_INPUT_HIGH : OLD_INPUT_LOW) |
                            ((NewState == HIGH) ? NEW_INPUT_HIGH : NEW_INPUT_LOW));
 }
 
-void processPinPair(PinTimedFlipFlop_t PinPair) {
+void processPinPair(PinTimedFlipFlop_t& PinPair, Time_t PassedTime) {
   PinState_t InputPinNewState = digitalRead(PinPair.InputPin);
   FlipFlopState_t State = getNewFlipFlopState(PinPair.InputPinPreviousState, InputPinNewState);
 
@@ -68,7 +49,7 @@ void processPinPair(PinTimedFlipFlop_t PinPair) {
     case INPUT_HIGH:
       if (PinPair.Timer > 0) {
         // count timer down
-        PinPair.Timer--;
+        PinPair.Timer -= (Timer_t)PassedTime;
       } else {
         // timer has run out, set output to LOW
         digitalWrite(PinPair.OutputPin, LOW);
@@ -82,27 +63,38 @@ void processPinPair(PinTimedFlipFlop_t PinPair) {
   }
 }
 
+PinTimedFlipFlop_t PinPairs[NUM_PINPAIRS];
+Time_t LastTimestamp = 0;
+void setup() {
+  // put your setup code here, to run once:
+
+  PinPairs[0] = PinTimedFlipFlop_t(1, 9);
+
+  for (int i=0; i<NUM_PINPAIRS; i++)
+  {
+    //Use Pullup resistor. To get an input signal, actively pull the line to ground.
+    pinMode(PinPairs[i].InputPin, INPUT_PULLUP);
+
+    pinMode(PinPairs[i].OutputPin, OUTPUT);
+    //Set the initial output to low.
+    digitalWrite(PinPairs[i].OutputPin, LOW);
+  }
+
+  LastTimestamp = millis();
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
 
-  //Check input here
-  //  Read Pin_1
-  //  If flag_Pin_1 == Pin_1  * check if Pin 1 was set before (flag_Pin_1 contains the previous value of Pin_1)
-  //    If Count > 0          * nothing happened
-  //      Count--             * count timer down
-  //    Else
-  //      Pin_9 = Low
-  //    EndIf
-  //  Else
-  //    flag_Pin_1 = Pin_1    * set flag_Pin_1 to current value of Pin_1
-  //    Count = 5             * reset timer to 500ms
-  //    Pin_9 = High          * set output to High
-  //  EndIf
-  //
-  //
-  //  delay 100 ms
-  //
+  Time_t CurrentTimestamp = millis();
+  Time_t PassedTime = LastTimestamp - CurrentTimestamp;
 
-  //Wait for 100ms
-  delay(100);
+  for (int i=0; i<NUM_PINPAIRS; i++)
+  {
+    processPinPair(PinPairs[i], PassedTime);
+  }
+
+  LastTimestamp = CurrentTimestamp;
+  //Wait for 1ms
+  delay(1);
 }
