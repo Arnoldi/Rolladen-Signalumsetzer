@@ -6,11 +6,16 @@ typedef unsigned int Timer_t;
 typedef unsigned char Pin_t;
 typedef bool PinState_t;
 
+#define OLD_INPUT_LOW  0x00
+#define OLD_INPUT_HIGH 0x01
+#define NEW_INPUT_LOW  0x00
+#define NEW_INPUT_HIGH 0x02
+
 enum FlipFlopState_t {
-  INPUT_LOW = 0,
-  INPUT_RISING,
-  INPUT_HIGH,
-  INPUT_FALLING
+  INPUT_LOW = OLD_INPUT_LOW | NEW_INPUT_LOW,
+  INPUT_RISING = OLD_INPUT_LOW | NEW_INPUT_HIGH,
+  INPUT_HIGH = OLD_INPUT_HIGH | NEW_INPUT_HIGH,
+  INPUT_FALLING = OLD_INPUT_HIGH | NEW_INPUT_LOW
 };
 
 struct PinTimedFlipFlop_t {
@@ -47,6 +52,11 @@ FlipFlopState_t getNewFlipFlopState(PinState_t OldState, PinState_t NewState) {
       return INPUT_LOW; 
     }
   }
+}
+
+FlipFlopState_t getNewFlipFlopState2(PinState_t OldState, PinState_t NewState) {
+  return (FlipFlopState_t)(((OldState == HIGH) ? OLD_INPUT_HIGH : OLD_INPUT_LOW) |
+                           ((NewState == HIGH) ? NEW_INPUT_HIGH : NEW_INPUT_LOW));
 }
 
 void processPinPair(PinTimedFlipFlop_t PinPair) {
