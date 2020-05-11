@@ -1,9 +1,9 @@
 #define PULSE_DURATION 500
-#define NUM_PINPAIRS 8
+#define NUM_PINPAIRS 1
 
 typedef unsigned long Time_t;
 typedef int Clock_t;
-typedef unsigned int Timer_t;
+typedef int Timer_t;
 typedef unsigned char Pin_t;
 typedef bool PinState_t;
 
@@ -53,7 +53,9 @@ void processPinPair(PinTimedFlipFlop_t& PinPair, Time_t PassedTime) {
       } else {
         // timer has run out, set output to LOW
         digitalWrite(PinPair.OutputPin, LOW);
+        PinPair.Timer = 0;
       }
+      break;
     case INPUT_RISING:
     case INPUT_FALLING:
       // start pulse by setting the timer to the pulse duration and setting ouput to HIGH
@@ -68,9 +70,9 @@ Time_t LastTimestamp = 0;
 void setup() {
   // put your setup code here, to run once:
 
-  PinPairs[0] = PinTimedFlipFlop_t(1, 9);
+  PinPairs[0] = PinTimedFlipFlop_t(4, 1);
 
-  for (int i=0; i<NUM_PINPAIRS; i++)
+  for (int i = 0; i < NUM_PINPAIRS; i++)
   {
     //Use Pullup resistor. To get an input signal, actively pull the line to ground.
     pinMode(PinPairs[i].InputPin, INPUT_PULLUP);
@@ -83,18 +85,21 @@ void setup() {
   LastTimestamp = millis();
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
 
   Time_t CurrentTimestamp = millis();
-  Time_t PassedTime = LastTimestamp - CurrentTimestamp;
+  Time_t PassedTime = CurrentTimestamp - LastTimestamp;
 
-  for (int i=0; i<NUM_PINPAIRS; i++)
+  if (PassedTime > 0)
   {
-    processPinPair(PinPairs[i], PassedTime);
+    for (int i = 0; i < NUM_PINPAIRS; i++)
+    {
+      processPinPair(PinPairs[i], PassedTime);
+    }
+    LastTimestamp = CurrentTimestamp;
   }
-
-  LastTimestamp = CurrentTimestamp;
   //Wait for 1ms
   delay(1);
 }
