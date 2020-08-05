@@ -1,5 +1,5 @@
 #define PULSE_DURATION 500
-#define NUM_PINPAIRS 1
+#define NUM_PINPAIRS 8
 
 typedef unsigned long Time_t;
 typedef int Clock_t;
@@ -51,17 +51,17 @@ void processPinPair(PinTimedFlipFlop_t& PinPair, Time_t PassedTime) {
         // count timer down
         PinPair.Timer -= (Timer_t)PassedTime;
       } else {
-        // timer has run out, set output to LOW
-        digitalWrite(PinPair.OutputPin, LOW);
+        // timer has run out, set output to HIGH
+        digitalWrite(PinPair.OutputPin, HIGH);
         PinPair.Timer = 0;
       }
       break;
     case INPUT_RISING:
     case INPUT_FALLING:
-      // start pulse by setting the timer to the pulse duration and setting ouput to HIGH
+      // start pulse by setting the timer to the pulse duration and setting ouput to LOW
       PinPair.Timer = PULSE_DURATION;
       PinPair.InputPinPreviousState = InputPinNewState;
-      digitalWrite(PinPair.OutputPin, HIGH);
+      digitalWrite(PinPair.OutputPin, LOW);
   }
 }
 
@@ -70,7 +70,14 @@ Time_t LastTimestamp = 0;
 void setup() {
   // put your setup code here, to run once:
 
-  PinPairs[0] = PinTimedFlipFlop_t(4, 1);
+  PinPairs[0] = PinTimedFlipFlop_t(3, 5);
+  PinPairs[1] = PinTimedFlipFlop_t(4, 6);
+  PinPairs[2] = PinTimedFlipFlop_t(A0, 7);
+  PinPairs[3] = PinTimedFlipFlop_t(A1, 8);
+  PinPairs[4] = PinTimedFlipFlop_t(A2, 9);
+  PinPairs[5] = PinTimedFlipFlop_t(A3, 10);
+  PinPairs[6] = PinTimedFlipFlop_t(A4, 11);
+  PinPairs[7] = PinTimedFlipFlop_t(A5, 12);
 
   for (int i = 0; i < NUM_PINPAIRS; i++)
   {
@@ -79,7 +86,7 @@ void setup() {
 
     pinMode(PinPairs[i].OutputPin, OUTPUT);
     //Set the initial output to low.
-    digitalWrite(PinPairs[i].OutputPin, LOW);
+    digitalWrite(PinPairs[i].OutputPin, HIGH);
   }
 
   LastTimestamp = millis();
